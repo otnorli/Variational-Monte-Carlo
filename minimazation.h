@@ -13,7 +13,7 @@ class minimazation
 {
 public:
     minimazation(double alfha, double beta, int number_variables, int numpar, int charg, double steplen, double hhhh, double hhhh2, int dimdim, int myran, int totsiz);
-    vec ConjugateGratient();
+    vec ConjugateGratient(double inputR);
     vec returnEnergy(double beta, double alpha, int xaxa, const mat &Rmat);
 
 private:

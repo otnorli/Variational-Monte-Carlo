@@ -12,35 +12,36 @@ minimazation::minimazation(double alfha, double betna, int number_variables, int
     h2 = hhhh2;
     max_variations = 1;
     thermalization = 10000;
-    cycles = 50000;
+    cycles = 30000;
     xyzdimension = dimdim;
     beta = betna;
     my_rank = myran;
     size = totsiz;
 }
 
-vec minimazation::ConjugateGratient()
+vec minimazation::ConjugateGratient(double inputR)
 {
     double number_atoms = 2;
     double fraction = 0.5;
-    R = zeros(number_atoms, dimension);
+    R = zeros(number_atoms, xyzdimension);
     R_temp = zeros(number_atoms, dimension);
     int Itermax, i, j, k, m;
     //Rpos = 5.0;
 
     //Starter ved i=500 for runde 2, trenger flere iterasjoner
-    Rpos = 5.00;
+    Rpos = inputR;
 
     /////////////////
 
     R(1,0) = Rpos;
+
     double tempSGA;
     double forskjell;
     double scaling;
     double tolerance = 0.0001;
     vec x_old(dimension);
     m = 10;
-    Itermax = 1000;
+    Itermax = 110;
     vec alpha_liste(Itermax);
     vec beta_liste(Itermax);
 
@@ -58,25 +59,26 @@ vec minimazation::ConjugateGratient()
 
     x_old(0) = alpha;
     x_old(1) = beta;
-    x_old(2) = Rpos;
+    //x_old(2) = Rpos;
 
     for (i=50; i<Itermax; i++)
     {
+
         m_tilde(0) = 0;
         m_tilde(1) = 0;
-        m_tilde(2) = 0;
+        //m_tilde(2) = 0;
 
         SGA_org_sum(0) = 0;
         SGA_org_sum(1) = 0;
-        SGA_org_sum(2) = 0;
+        //SGA_org_sum(2) = 0;
 
         SGA_upp_sum(0) = 0;
         SGA_upp_sum(1) = 0;
-        SGA_upp_sum(2) = 0;
+        //SGA_upp_sum(2) = 0;
 
         SGA_tot_sum(0) = 0;
         SGA_tot_sum(1) = 0;
-        SGA_tot_sum(2) = 0;
+        //SGA_tot_sum(2) = 0;
 
         //Vi bruker m walkere og snitter over dette. Trenger da ikke så mange steg per walker
         for (j=0; j<m; j++)
@@ -86,8 +88,8 @@ vec minimazation::ConjugateGratient()
             //Variansen eller energien
             //0 = energien,
             //1 = variansen
-            R(1,0) = x_old(2);
-            R_temp(1,0) = x_old(2) - step_lenght;
+            //R(1,0) = x_old(2);
+            //R_temp(1,0) = x_old(2) - step_lenght;
 
             //tempSGA = returnEnergy(x_old(1), x_old(0), j, R)(1);
 
@@ -101,14 +103,14 @@ vec minimazation::ConjugateGratient()
             SGA_org(j,0) = returnEnergy(x_old(1), x_old(0) - step_lenght, j, R)(1);
             SGA_org(j,1) = returnEnergy(x_old(1) - step_lenght, x_old(0), j, R)(1);
             //SGA_org(j,1) = returnEnergy(x_old(1), x_old(0), j, R)(0);
-            SGA_org(j,2) = returnEnergy(x_old(1), x_old(0), j, R_temp)(0);
+            //SGA_org(j,2) = returnEnergy(x_old(1), x_old(0), j, R_temp)(0);
 
-            R_temp(1,0) = x_old(2) + step_lenght;
+            //R_temp(1,0) = x_old(2) + step_lenght;
 
             //Energien i et punkt veldig nær, for deriverte
             SGA_upp(j,0) = returnEnergy(x_old(1), x_old(0) + step_lenght, j, R)(1);
             SGA_upp(j,1) = returnEnergy(x_old(1) + step_lenght, x_old(0), j, R)(1);
-            SGA_upp(j,2) = returnEnergy(x_old(1), x_old(0), j, R_temp)(0);
+           // SGA_upp(j,2) = returnEnergy(x_old(1), x_old(0), j, R_temp)(0);
 
             //Minimere variansen
             //SGA_upp(j,0) = returnEnergy(x_old(1), x_old(0)+step_lenght, j)(1);
@@ -117,24 +119,24 @@ vec minimazation::ConjugateGratient()
             //Vektene for stokastic gradient method
             w_i(j,0) = SGA_upp(j, 0)*SGA_upp(j,0)/SGA_org(j,0)/SGA_org(j,0);
             w_i(j,1) = SGA_upp(j, 1)*SGA_upp(j,1)/SGA_org(j,1)/SGA_org(j,1);
-            w_i(j,2) = SGA_upp(j, 2)*SGA_upp(j,2)/SGA_org(j,2)/SGA_org(j,2);
+            //w_i(j,2) = SGA_upp(j, 2)*SGA_upp(j,2)/SGA_org(j,2)/SGA_org(j,2);
 
             //m tilde, summen av alle vektene
             m_tilde(0) += w_i(j,0);
             m_tilde(1) += w_i(j,1);
-            m_tilde(2) += w_i(j,2);
+            //m_tilde(2) += w_i(j,2);
 
             //verdien ganger vekten, summerer opp
             SGA_org_sum(0) += w_i(j,0) * SGA_org(j,0);
             SGA_org_sum(1) += w_i(j,1) * SGA_org(j,1);
-            SGA_org_sum(2) += w_i(j,2) * SGA_org(j,2);
+            //SGA_org_sum(2) += w_i(j,2) * SGA_org(j,2);
 
             SGA_upp_sum(0) += w_i(j,0) * SGA_upp(j,0);
             SGA_upp_sum(1) += w_i(j,1) * SGA_upp(j,1);
-            SGA_upp_sum(2) += w_i(j,2) * SGA_upp(j,2);
+            //SGA_upp_sum(2) += w_i(j,2) * SGA_upp(j,2);
         }
 
-        cout << SGA_upp_sum(2) << " " << SGA_org_sum(2) << " ";
+        //cout << SGA_upp_sum(2) << " " << SGA_org_sum(2) << " ";
 
         for (k=0; k<dimension; k++)
         {
@@ -145,13 +147,12 @@ vec minimazation::ConjugateGratient()
             //scaling = 100+i;
             scaling = (double) i;///10000.0;
 
-
             forskjell = (double) SGA_tot_sum(k)/scaling;
 
-            if (k==2)
-            {
-                forskjell *= 3;//5000;
-            }
+            //if (k==2)
+            //{
+            //    forskjell *= 3;//5000;
+           // }
 
             if (k==0)
             {
@@ -178,10 +179,10 @@ vec minimazation::ConjugateGratient()
         alpha_liste(i) = x_old(0);
         beta_liste(i) = x_old(1);
 
-        if (abs(SGA_tot_sum(1)) == 0 && abs(SGA_tot_sum(0)) == 0 && (abs(SGA_tot_sum(3)) == 0))
-        {
-            i = Itermax-1;
-        }
+        //if (abs(SGA_tot_sum(1)) == 0 && abs(SGA_tot_sum(0)) == 0)
+       //{
+         //   i = Itermax-1;
+        //}
     }
 
     cout << "alpha_liste : ";

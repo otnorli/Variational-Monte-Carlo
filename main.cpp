@@ -32,8 +32,8 @@ int main()
     number_particles = 4;
     charge = number_particles; //Hvis du ikke har ioner
     max_variations = 1;
-    number_cycles  = 200000;
-    thermalization =  10000;
+    number_cycles  = 2000000;
+    thermalization =  100000;
     step_lenght = 0.05;
     //beta = 0.94714228;
     //alpha = 4.62;
@@ -41,32 +41,36 @@ int main()
     beta = 0.87731;
     alpha = 3.92879;
 
-    number_variableZ = 3;
+    number_variableZ = 2;
     number_atoms = 2;
 
     R = zeros(number_atoms, dimension);
     R(1,0) = 4.5625;
 
-    //vec variable_list(number_variableZ);
+    vec variable_list(number_variableZ);
     //variable_list(0) = alpha;
     //variable_list(1) = beta;
     //variable_list(2) = R(1,0);
 
     cumulative_e = new double[max_variations*max_variations];
     cumulative_e2 = new double[max_variations*max_variations];
-    Renergy = new double[100];
+    Renergy = new double[50];
 
     //minimerer
     minimazation Mini(alpha, beta, number_variableZ, number_particles, charge, step_lenght, h, h2, dimension, 0, 0);
 
     //variable_list = Mini.ConjugateGratient();
-    //alpha = variable_list(0);
-    //beta = variable_list(1);
+    alpha = variable_list(0);
+    beta = variable_list(1);
     //R(1,0) = variable_list(2);
 
-    for (int T = 1; T < 101; T++)
+    for (int T = 1; T < 51; T++)
     {
-        R(1,0) = 3.53 + (double) T / 100;
+        R(1,0) = 3.53 + (double) T / 50;
+        variable_list = Mini.ConjugateGratient(R(1,0));
+
+        alpha = variable_list(0);
+        beta = variable_list(1);
 
         //Importantsampling med Slater determinant som bølgefunksjon
         SlaterImportantSampling SIS(dimension, number_particles, charge, max_variations, number_cycles, step_lenght, h, h2, thermalization, number_atoms, R);
